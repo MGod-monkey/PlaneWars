@@ -43,8 +43,8 @@ pygame.display.set_icon(icon)
 start_music = pygame.mixer.Sound("sound\\BGM_long.wav")
 start_music.set_volume(volume)
 # 游戏背景音乐
-fight_sound = pygame.mixer.Sound("sound\\BGM.wav")
-fight_sound.set_volume(0.1)  # 音乐的音量设定，值在0到1
+pygame.mixer.music.load("sound\\BGM.wav")
+pygame.mixer.music.set_volume(0.1)  # 音乐的音量设定，值在0到1
 # 玩家死亡音效
 user_getover = pygame.mixer.Sound("sound\\game_over.wav")
 user_getover.set_volume(volume)
@@ -113,6 +113,8 @@ author_nor_image = pygame.image.load("image\\author.png").convert_alpha()
 author_pressed_image = pygame.image.load("image\\author_pressed.png").convert_alpha()
 author_tx = pygame.image.load("image\\tx.png").convert_alpha()
 author_bf = pygame.image.load("image\\author_bg.png").convert()
+volume_image = pygame.image.load("image\\volume.png").convert_alpha()
+volume_pole = pygame.image.load("image\\volume_pole.png").convert_alpha()
 loading_image = [pygame.image.load("image\\game_loading1.png").convert_alpha(),
                  pygame.image.load("image\\game_loading2.png").convert_alpha(),
                  pygame.image.load("image\\game_loading3.png").convert_alpha(),
@@ -232,6 +234,8 @@ def setting():
         if event.type == pygame.QUIT:
             pygame.quit()
             exit()
+        elif event.type == pygame.KEYDOWN:
+            return None
     
     # 刷新屏幕
     pygame.display.flip()
@@ -303,6 +307,8 @@ def main():
     setting_image = setting_nor_image
     setting_rect = setting_image.get_rect()
     setting_rect.left, setting_rect.top = width_2 - setting_rect.width - 10, 66 + 40 + authon_image_rect.height + music_image_rect.height
+    # 生成音量调节对象
+    volume_rect = volume
     # 生成停止界面选项
     button_rect = button_not_image.get_rect()
     button_2_rect = button_not_image.get_rect()
@@ -584,9 +590,9 @@ def main():
         if pygame.display.get_active():
             if not pause_cond:
                 if volume_cond:
-                    fight_sound.play(fade_ms=500)
+                    pygame.mixer.music.play()
                 else:
-                    fight_sound.stop()
+                    pygame.mixer.music.stop()
                 pygame.mixer.music.unpause()
                 pygame.display.set_caption("正在游戏")
                 # 检测玩家飞机是否与敌方飞机相撞
@@ -769,6 +775,7 @@ def main():
                 pygame.display.set_caption("暂停游戏")
         else:
             pause_cond = True
+            pygame.mixer.music.pause()
             pygame.mixer.pause()
         # 刷新屏幕
         pygame.display.update()
