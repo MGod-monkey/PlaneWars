@@ -35,7 +35,6 @@ mode_s, mode_m, mode_b, enemy_numbers = mode[0], mode[1], mode[2], mode[3]
 # 窗口初始化
 screen = pygame.display.set_mode(screen_1_size)
 icon = pygame.image.load("image\\icon.png")
-pygame.display.set_caption("飞机大战--MGod吾 v1.0")
 pygame.display.set_icon(icon)
 
 
@@ -45,7 +44,7 @@ start_music = pygame.mixer.Sound("sound\\BGM_long.wav")
 start_music.set_volume(volume)
 # 游戏背景音乐
 fight_sound = pygame.mixer.Sound("sound\\BGM.wav")
-fight_sound.set_volume(volume)  # 音乐的音量设定，值在0到1
+fight_sound.set_volume(0.1)  # 音乐的音量设定，值在0到1
 # 玩家死亡音效
 user_getover = pygame.mixer.Sound("sound\\game_over.wav")
 user_getover.set_volume(volume)
@@ -79,6 +78,12 @@ enemy2_appear_sound.set_volume(volume)
 # 使用全局炸弹音效
 use_bomb_sound = pygame.mixer.Sound("sound\\use_bomb.wav")
 use_bomb_sound.set_volume(volume)
+# 圈住你
+qzn_sound = pygame.mixer.Sound("sound\\圈住你-一口甜.wav")
+qzn_sound.set_volume(volume)
+# 无名之辈
+wmzb_sound = pygame.mixer.Sound("sound\\无名之辈-陈雪燃.wav")
+wmzb_sound.set_volume(volume)
 
 
 # 载入图片
@@ -106,7 +111,8 @@ music_stop_image2 = pygame.image.load("image\\music_stop_pressed.png").convert_a
 music_stop_image = pygame.image.load("image\\music_stop.png").convert_alpha()
 author_nor_image = pygame.image.load("image\\author.png").convert_alpha()
 author_pressed_image = pygame.image.load("image\\author_pressed.png").convert_alpha()
-author_tx = pygame.image.load("image\\")
+author_tx = pygame.image.load("image\\tx.png").convert_alpha()
+author_bf = pygame.image.load("image\\author_bg.png").convert()
 loading_image = [pygame.image.load("image\\game_loading1.png").convert_alpha(),
                  pygame.image.load("image\\game_loading2.png").convert_alpha(),
                  pygame.image.load("image\\game_loading3.png").convert_alpha(),
@@ -156,7 +162,6 @@ def set_history_score(score, history_score):
 # 载入游戏动画
 def display_loading(index, delay):
     loading_rect = loading_image[0].get_rect()
-    start_music.play(-1)
     while True:
         if not (delay % 5):
             if index == 0:
@@ -165,7 +170,7 @@ def display_loading(index, delay):
                 screen.blit(start_bg_image, (0, 0))
                 screen.blit(name_image, (width_1 // 2 - name_image_rect.width // 2, 100))
                 screen.blit(loading_image[index], loading_rect)
-                pygame.time.delay(500)
+                pygame.time.delay(300)
                 index += 1
             elif index == 1:
                 loading_rect.left, loading_rect.top = width_1 // 2 - 80, 300
@@ -173,7 +178,7 @@ def display_loading(index, delay):
                 screen.blit(start_bg_image, (0, 0))
                 screen.blit(name_image, (width_1 // 2 - name_image_rect.width // 2, 100))
                 screen.blit(loading_image[index], loading_rect)
-                pygame.time.delay(500)
+                pygame.time.delay(300)
                 index += 1
             elif index == 2:
                 loading_rect.left, loading_rect.top = width_1 // 2 - 80, 300
@@ -181,7 +186,7 @@ def display_loading(index, delay):
                 screen.blit(start_bg_image, (0, 0))
                 screen.blit(name_image, (width_1 // 2 - name_image_rect.width // 2, 100))
                 screen.blit(loading_image[index], loading_rect)
-                pygame.time.delay(500)
+                pygame.time.delay(300)
                 index += 1
             elif index == 3:
                 loading_rect.left, loading_rect.top = width_1 // 2 - 80, 300
@@ -189,15 +194,48 @@ def display_loading(index, delay):
                 screen.blit(start_bg_image, (0, 0))
                 screen.blit(name_image, (width_1 // 2 - name_image_rect.width // 2, 100))
                 screen.blit(loading_image[index], loading_rect)
-                pygame.time.delay(500)
-                start_music.stop()
-                break
+                pygame.time.delay(300)
+                return None
+
         # 刷新屏幕
         delay -= 1
         pygame.display.update()
         pygame.display.flip()
         clock.tick(fps)
 
+
+# 作者详情页的绘制
+def dispaly_author():
+    author_tx_rect = author_tx.get_rect()
+    author_bf.set_alpha(150)
+    author_tx_rect.left, author_tx_rect.top = width_2 // 2 - author_tx_rect.width // 2, 60
+    pygame.display.set_caption("作者详情")
+    if volume_cond:
+        qzn_sound.play(1, fade_ms=1 * 1000)
+        if not pygame.mixer.get_busy():
+            wmzb_sound.play(1, fade_ms= 1 * 1000)
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+            elif event.type == pygame.KEYDOWN:
+                return None
+        screen.blit(author_bf, (0, 0))
+        screen.blit(author_tx, author_tx_rect)
+        # 刷新屏幕
+        pygame.display.update()
+
+
+def setting():
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            exit()
+    
+    # 刷新屏幕
+    pygame.display.flip()
+    clock.tick(fps)
 
 def main():
     # # 基本变量
@@ -210,7 +248,7 @@ def main():
     switch_alpha = 255
     life_number = 3
     index = [0, 0, 0, 0, 0, 0, 0]  # 包含玩家，小型敌人，中型敌人，大型敌人，初级子弹的索引, 双倍子弹索引, 载入游戏图片索引
-    global delay, last_bomb, enemy_numbers, bullet_supply_numbers, bomb_supply_numbers, double_bullet_time
+    global delay, last_bomb, enemy_numbers, bullet_supply_numbers, bomb_supply_numbers, double_bullet_time, volume_cond
 
     # #开关变量
     # 制造飞机动态变化的开关
@@ -230,6 +268,8 @@ def main():
     button_2_switch = False
     # 读取历史纪录的开关
     read_score = True
+    # 音量开关
+    volume_cond = True
 
     # # 生成定时器模块
     # 双倍子弹计时器
@@ -250,9 +290,8 @@ def main():
     paused_rect.left, paused_rect.top = width_2 // 2 - paused_rect.width // 2, heigth_2 - paused_rect.height - 8
     # 生成炸弹按钮对象
     bomb_image_rect = bomb_image.get_rect()
-    bomb_image_rect.left, bomb_image_rect.top = paused_rect.right + 80, paused_rect.top - 5
+    bomb_image_rect.left, bomb_image_rect.top = paused_rect.right + 50, paused_rect.top - 5
     # 生成音量按键对象
-    music_cond = False
     music_switch = False
     music_image_rect = music_play_image.get_rect()
     music_image_rect.left, music_image_rect.top = width_2 - music_image_rect.width - 10, 66
@@ -311,6 +350,8 @@ def main():
 
     # 游戏的初始画面
     while START:
+        start_music.play(-1)
+        pygame.display.set_caption("飞机大战--MGod吾 v1.0")
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -322,27 +363,24 @@ def main():
                     pygame.display.set_mode(screen_2_size)
                     start_music.stop()
                     START = False
-        if pygame.display.get_active():
-            start_music.play(-1)
-            # 绘制屏幕
-            action_image.set_alpha(switch_alpha)
-            name_image_rect = name_image.get_rect()
-            action_image_rect = action_image.get_rect()
-            screen.blit(start_bg_image, (0, 0))
-            screen.blit(action_image, (width_1 // 2 - action_image_rect.width // 2, 400))
-            screen.blit(name_image, (width_1 // 2 - name_image_rect.width // 2, 100))
-            if not (delay % 5):
-                if switch_alpha_cond:
-                    if switch_alpha > 0:
-                        switch_alpha -= 3
-                    else:
-                        switch_alpha_cond = not switch_alpha_cond
+        # 绘制屏幕
+        action_image.set_alpha(switch_alpha)
+        name_image_rect = name_image.get_rect()
+        action_image_rect = action_image.get_rect()
+        screen.blit(start_bg_image, (0, 0))
+        screen.blit(action_image, (width_1 // 2 - action_image_rect.width // 2, 400))
+        screen.blit(name_image, (width_1 // 2 - name_image_rect.width // 2, 100))
+        if not (delay % 5):
+            if switch_alpha_cond:
+                if switch_alpha > 0:
+                    switch_alpha -= 3
                 else:
-                    if 255 - switch_alpha > 0:
-                        switch_alpha += 3
-                    else:
-                        switch_alpha_cond = not switch_alpha_cond
-
+                    switch_alpha_cond = not switch_alpha_cond
+            else:
+                if 255 - switch_alpha > 0:
+                    switch_alpha += 3
+                else:
+                    switch_alpha_cond = not switch_alpha_cond
         # 刷新屏幕
         pygame.display.update()
         pygame.display.flip()
@@ -356,7 +394,8 @@ def main():
                 exit()
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
-                    button_sound.play()
+                    if volume_cond:
+                        button_sound.play()
                     pause_cond = not pause_cond
                     if pause_cond:
                         pygame.time.set_timer(SUPPLY_TIME, 0)
@@ -369,10 +408,23 @@ def main():
                 elif event.key == pygame.K_q:
                     if last_bomb:
                         last_bomb -= 1
-                        use_bomb_sound.play()
+                        if volume_cond:
+                            use_bomb_sound.play()
                         for enemy in enemies:
                             if enemy.rect.bottom > 0:
                                 enemy.hp = 0
+                elif event.key == pygame.K_w:
+                    if volume_cond:
+                        button_sound.play()
+                    volume_cond = not volume_cond
+                elif event.key == pygame.K_e:
+                    if volume_cond:
+                        button_sound.play()
+                    dispaly_author()
+                elif event.key == pygame.K_r:
+                    if volume_cond:
+                        button_sound.play()
+                    setting()
             elif event.type == DOUBLE_BULLET_TIME and is_double_bullet and not pause_cond:
                 if double_time:
                     double_time -= 1
@@ -412,50 +464,30 @@ def main():
                     setting_image = setting_nor_image
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1 and paused_rect.collidepoint(event.pos):
-                    use_bomb_sound.play()
+                    if volume_cond:
+                        button_sound.play()
                     pause_cond = not pause_cond
                 elif event.button == 1 and button_rect.collidepoint(event.pos):
-                    use_bomb_sound.play()
+                    if volume_cond:
+                        button_sound.play()
                     pause_cond = not pause_cond
                 elif event.button == 1 and button_2_rect.collidepoint(event.pos):
-                    use_bomb_sound.play()
+                    if volume_cond:
+                        button_sound.play()
                     pygame.quit()
                     exit()
                 elif event.button == 1 and music_image_rect.collidepoint(event.pos):
-                    music_cond = not music_cond
-                    if not music_cond:
-                        fight_sound.set_volume(volume)
-                        user_getover.set_volume(volume)
-                        get_bomb_sound.set_volume(volume)
-                        get_double_sound.set_volume(volume)
-                        bullet_sound.set_volume(volume)
-                        get_bullet_sound.set_volume(volume)
-                        button_sound.set_volume(volume)
-                        enemy0_down_sound.set_volume(volume)
-                        enemy1_down_sound.set_volume(volume)
-                        enemy2_down_sound.set_volume(volume)
-                        enemy2_appear_sound.set_volume(volume)
-                        use_bomb_sound.set_volume(volume)
-                    else:
-                        fight_sound.set_volume(0)
-                        user_getover.set_volume(0)
-                        get_bomb_sound.set_volume(0)
-                        get_double_sound.set_volume(0)
-                        bullet_sound.set_volume(0)
-                        get_bullet_sound.set_volume(0)
-                        button_sound.set_volume(0)
-                        enemy0_down_sound.set_volume(0)
-                        enemy1_down_sound.set_volume(0)
-                        enemy2_down_sound.set_volume(0)
-                        enemy2_appear_sound.set_volume(0)
-                        use_bomb_sound.set_volume(0)
+                    volume_cond = not volume_cond
                 elif event.button == 1 and bomb_image_rect.collidepoint(event.pos):
                     if last_bomb:
                         last_bomb -= 1
-                        use_bomb_sound.play()
+                        if volume_cond:
+                            use_bomb_sound.play()
                         for enemy in enemies:
                             if enemy.rect.bottom > 0:
                                 enemy.hp = 0
+                elif event.button == 1 and authon_image_rect.collidepoint(event.pos):
+                    dispaly_author()
         # 检测键盘按键事件
         key_pressed = pygame.key.get_pressed()
         if key_pressed[pygame.K_UP] or key_pressed[pygame.K_w]:
@@ -489,7 +521,7 @@ def main():
         else:
             screen.blit(pause_image_2, paused_rect)
         # 检测音量按键的状态
-        if not music_cond:
+        if volume_cond:
             music_image_1 = music_play_image
             music_image_2 = music_play_image2
         else:
@@ -547,16 +579,23 @@ def main():
                 add_small_enemies(small_enemies, enemies, add_number[0])
                 add_mid_enemies(mid_enemies, enemies, add_number[1])
                 add_big_enemies(big_enemies, enemies, add_number[2])
+
         # 当窗口呈现时并且暂停按钮不被按下时所要执行的代码
         if pygame.display.get_active():
             if not pause_cond:
+                if volume_cond:
+                    fight_sound.play(fade_ms=500)
+                else:
+                    fight_sound.stop()
+                pygame.mixer.music.unpause()
                 pygame.display.set_caption("正在游戏")
                 # 检测玩家飞机是否与敌方飞机相撞
                 bump_numbers = pygame.sprite.spritecollide(player_plane, enemies, False, pygame.sprite.collide_mask)
                 if bump_numbers and not player_plane.wd:
                     if life_number:
                         life_number -= 1
-                        user_getover.play()
+                        if volume_cond:
+                            user_getover.play()
                         player_plane.start_pos()
                         pygame.time.set_timer(WD_TIME, 3 * 1000)
                     for e in bump_numbers:
@@ -570,7 +609,8 @@ def main():
                         screen.blit(player_plane.plane_2, player_plane.rect)
                 else:
                     if not index[0]:
-                        user_getover.play()
+                        if volume_cond:
+                            user_getover.play()
                     if not (delay % 5):
                         screen.blit(player_plane.getover_image_list[index[0]], player_plane.rect)
                         index[0] = (index[0] + 1) % 4
@@ -586,7 +626,8 @@ def main():
                         bullet_1[index[4]].start_pos(midtop)
                         index[4] = (index[4] + 1) % bullet_1_numbers
                     elif not (delay % 15) and life_number:
-                        bullet_sound.play()
+                        if volume_cond:
+                            bullet_sound.play()
                 else:
                     bullet_list = bullet_2
                     if not (delay % 8):
@@ -596,7 +637,8 @@ def main():
                             (player_plane.rect.centerx + 30, player_plane.rect.centery - 25))
                         index[5] = (index[5] + 2) % bullet_2_numbers
                     elif not (delay % 10) and life_number:
-                        bullet_sound.play()
+                        if volume_cond:
+                            bullet_sound.play()
                 # 检测子弹是否存活
                 for bullet in bullet_list:
                     if bullet.active:
@@ -615,11 +657,13 @@ def main():
                 if get_supply:
                     for s in get_supply:
                         if s == bomb_supply:
-                            get_bomb_sound.play()
+                            if volume_cond:
+                                get_bomb_sound.play()
                             if last_bomb < 3:
                                 last_bomb += 1
                         elif s == bullet_supply:
-                            get_bomb_sound.play()
+                            if volume_cond:
+                                get_bomb_sound.play()
                             double_time = double_bullet_time
                             is_double_bullet = True
                             pygame.time.set_timer(DOUBLE_BULLET_TIME, 1 * 1000)
@@ -640,7 +684,8 @@ def main():
                     elif not (delay % 3):
                         score += 500
                         if index[1] == 0:
-                            enemy0_down_sound.play()
+                            if volume_cond:
+                                enemy0_down_sound.play()
                         screen.blit(enemy.getover_image_list[index[1]], enemy.rect)
                         index[1] = (index[1] + 1) % 4
                         if index[1] == 0:
@@ -656,7 +701,8 @@ def main():
                     elif not (delay % 3):
                         score += 2000
                         if index[2] == 0:
-                            enemy1_down_sound.play()
+                            if volume_cond:
+                                enemy1_down_sound.play()
                         screen.blit(enemy.getover_image_list[index[2]], enemy.rect)
                         index[2] = (index[2] + 1) % 4
                         if index[2] == 0:
@@ -687,7 +733,8 @@ def main():
                         score += 50000
                         enemy2_appear_sound.stop()
                         if index[3] == 0:
-                            enemy2_down_sound.play()
+                            if volume_cond:
+                                enemy2_down_sound.play()
                         screen.blit(enemy.getover_image_list[index[3]], enemy.rect)
                         index[3] = (index[3] + 1) % 6
                         if index[3] == 0:
@@ -722,7 +769,7 @@ def main():
                 pygame.display.set_caption("暂停游戏")
         else:
             pause_cond = True
-            pygame.mixer.music.pause()
+            pygame.mixer.pause()
         # 刷新屏幕
         pygame.display.update()
         pygame.display.flip()
