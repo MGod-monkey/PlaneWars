@@ -15,6 +15,7 @@ pygame.font.init()  # 字体初始化
 config = ConfigParser()   # 配置信息初始化
 font = pygame.font.Font("font\\Marker Felt.ttf", 36)   # 字体1对象初始化
 font_2 = pygame.font.Font("font\\Marker Felt.ttf", 80)  # 字体2对象初始化
+font_3 = pygame.font.Font("font\\字魂50号-白鸽天行体.ttf", 30)   # 字体3对象初始化
 clock = pygame.time.Clock()  # 锁帧对象初始化
 
 
@@ -25,6 +26,7 @@ screen_1_size = width_1, heigth_1 = config["display"].getint("size_1_w"),\
 screen_2_size = width_2, heigth_2 = config["display"].getint("size_2_w"), \
     config["display"].getint("size_2_h")
 volume = config["music"].getfloat("volume")
+volume_2 = config["music"].getfloat("volume_2")
 fps = config["display"].getint("fps")
 delay = config["display"].getint("delay")
 mode = eval(config["mode"].get("easy"))
@@ -44,7 +46,7 @@ start_music = pygame.mixer.Sound("sound\\BGM_long.wav")
 start_music.set_volume(volume)
 # 游戏背景音乐
 pygame.mixer.music.load("sound\\BGM.wav")
-pygame.mixer.music.set_volume(0.1)  # 音乐的音量设定，值在0到1
+pygame.mixer.music.set_volume(volume_2)  # 音乐的音量设定，值在0到1
 # 玩家死亡音效
 user_getover = pygame.mixer.Sound("sound\\game_over.wav")
 user_getover.set_volume(volume)
@@ -215,31 +217,87 @@ def dispaly_author():
     if volume_cond:
         qzn_sound.play(1, fade_ms=1 * 1000)
         if not pygame.mixer.get_busy():
-            wmzb_sound.play(1, fade_ms= 1 * 1000)
+            wmzb_sound.play(1, fade_ms = 1 * 1000)
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 exit()
             elif event.type == pygame.KEYDOWN:
+                qzn_sound.stop()
+                wmzb_sound.stop()
                 return None
-        screen.blit(author_bf, (0, 0))
-        screen.blit(author_tx, author_tx_rect)
+        if pygame.display.get_active():
+            screen.blit(author_bf, (0, 0))
+            screen.blit(author_tx, author_tx_rect)
         # 刷新屏幕
         pygame.display.update()
 
 
-def setting():
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            pygame.quit()
-            exit()
-        elif event.type == pygame.KEYDOWN:
-            return None
-    
-    # 刷新屏幕
-    pygame.display.flip()
-    clock.tick(fps)
+def setting(volume, volume_2):
+    # 生成音量框对象
+    volume_rect = volume_image.get_rect()
+    volume_rect_2 = volume_image.get_rect()
+    volume_rect.centerx, volume_rect.centery = width_2 // 2 + 20, 280
+    volume_rect_2.centerx, volume_rect_2.centery = width_2 // 2 + 20, volume_rect.height + 350
+
+    # 生成音量杆对象
+    volume_pole_rect = volume_pole.get_rect()
+    volume_pole_rect2 = volume_pole.get_rect()
+    volume_pole_rect.left, volume_pole_rect.top = volume_rect.left + volume * volume_rect.width, \
+                                                    volume_rect.top - 5
+    volume_pole_rect2.left, volume_pole_rect2.top = volume_rect_2.left + volume_2 * volume_rect.width, \
+                                                        volume_rect_2.top - 5
+    volume_fone = font_3.render("游戏音效  ", True, (0, 0, 0))
+    volume_fone_rect = volume_fone.get_rect()
+    volume_fone_rect.left, volume_fone_rect.bottom = volume_rect.left - volume_fone_rect.width, \
+                                                        volume_rect.bottom + 10
+    volume_fone2 = font_3.render("背景音乐  ", True, (0, 0, 0))
+    volume_fone_rect2 = volume_fone2.get_rect()
+    volume_fone_rect2.left, volume_fone_rect2.bottom = volume_rect_2.left - volume_fone_rect2.width, \
+                                                         volume_rect_2.bottom + 8
+    while True:
+        pygame.display.set_caption("设置")
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+            elif event.type == pygame.KEYDOWN:
+                return None
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1 and volume_rect.collidepoint(event.pos):
+                    if volume_rect.left <= event.pos[0] <= volume_rect.right - volume_pole_rect.width:
+                        volume_pole_rect.left = event.pos[0]
+                    volume = (volume_pole_rect.left - volume_rect.left) / 135
+                    user_getover.set_volume(volume)
+                    get_bomb_sound.set_volume(volume)
+                    get_double_sound.set_volume(volume)
+                    bullet_sound.set_volume(volume)
+                    get_bullet_sound.set_volume(volume)
+                    button_sound.set_volume(volume)
+                    enemy0_down_sound.set_volume(volume)
+                    enemy1_down_sound.set_volume(volume)
+                    enemy2_down_sound.set_volume(volume)
+                    enemy2_appear_sound.set_volume(volume)
+                    use_bomb_sound.set_volume(volume)
+                if event.button == 1 and volume_rect_2.collidepoint(event.pos):
+                    if volume_rect_2.left <= event.pos[0] <= volume_rect_2.right - volume_pole_rect2.width:
+                        volume_pole_rect2.left = event.pos[0]
+                    volume_2 = (volume_pole_rect2.left - volume_rect_2.left) / 135
+                    pygame.mixer.music.set_volume(volume_2)
+        # 绘制屏幕
+        screen.blit(bg_image, (0, 0))
+        screen.blit(volume_fone, volume_fone_rect)
+        screen.blit(volume_fone2, volume_fone_rect2)
+        screen.blit(volume_image, volume_rect)
+        screen.blit(volume_image, volume_rect_2)
+        screen.blit(volume_pole, volume_pole_rect)
+        screen.blit(volume_pole, volume_pole_rect2)
+
+        # 刷新屏幕
+        pygame.display.flip()
+        clock.tick(fps)
+
 
 def main():
     # # 基本变量
@@ -252,7 +310,8 @@ def main():
     switch_alpha = 255
     life_number = 3
     index = [0, 0, 0, 0, 0, 0, 0]  # 包含玩家，小型敌人，中型敌人，大型敌人，初级子弹的索引, 双倍子弹索引, 载入游戏图片索引
-    global delay, last_bomb, enemy_numbers, bullet_supply_numbers, bomb_supply_numbers, double_bullet_time, volume_cond
+    global delay, last_bomb, enemy_numbers, bullet_supply_numbers, bomb_supply_numbers, \
+                double_bullet_time, volume_cond, volume, volume_2
 
     # #开关变量
     # 制造飞机动态变化的开关
@@ -307,8 +366,6 @@ def main():
     setting_image = setting_nor_image
     setting_rect = setting_image.get_rect()
     setting_rect.left, setting_rect.top = width_2 - setting_rect.width - 10, 66 + 40 + authon_image_rect.height + music_image_rect.height
-    # 生成音量调节对象
-    volume_rect = volume
     # 生成停止界面选项
     button_rect = button_not_image.get_rect()
     button_2_rect = button_not_image.get_rect()
@@ -356,7 +413,7 @@ def main():
 
     # 游戏的初始画面
     while START:
-        start_music.play(-1)
+
         pygame.display.set_caption("飞机大战--MGod吾 v1.0")
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -370,23 +427,27 @@ def main():
                     start_music.stop()
                     START = False
         # 绘制屏幕
-        action_image.set_alpha(switch_alpha)
-        name_image_rect = name_image.get_rect()
-        action_image_rect = action_image.get_rect()
-        screen.blit(start_bg_image, (0, 0))
-        screen.blit(action_image, (width_1 // 2 - action_image_rect.width // 2, 400))
-        screen.blit(name_image, (width_1 // 2 - name_image_rect.width // 2, 100))
-        if not (delay % 5):
-            if switch_alpha_cond:
-                if switch_alpha > 0:
-                    switch_alpha -= 3
+        if pygame.display.get_active():
+            start_music.play()
+            action_image.set_alpha(switch_alpha)
+            name_image_rect = name_image.get_rect()
+            action_image_rect = action_image.get_rect()
+            screen.blit(start_bg_image, (0, 0))
+            screen.blit(action_image, (width_1 // 2 - action_image_rect.width // 2, 400))
+            screen.blit(name_image, (width_1 // 2 - name_image_rect.width // 2, 100))
+            if not (delay % 5):
+                if switch_alpha_cond:
+                    if switch_alpha > 0:
+                        switch_alpha -= 3
+                    else:
+                        switch_alpha_cond = not switch_alpha_cond
                 else:
-                    switch_alpha_cond = not switch_alpha_cond
-            else:
-                if 255 - switch_alpha > 0:
-                    switch_alpha += 3
-                else:
-                    switch_alpha_cond = not switch_alpha_cond
+                    if 255 - switch_alpha > 0:
+                        switch_alpha += 3
+                    else:
+                        switch_alpha_cond = not switch_alpha_cond
+        else:
+            start_music.stop()
         # 刷新屏幕
         pygame.display.update()
         pygame.display.flip()
@@ -419,18 +480,18 @@ def main():
                         for enemy in enemies:
                             if enemy.rect.bottom > 0:
                                 enemy.hp = 0
-                elif event.key == pygame.K_w:
-                    if volume_cond:
-                        button_sound.play()
-                    volume_cond = not volume_cond
                 elif event.key == pygame.K_e:
                     if volume_cond:
                         button_sound.play()
-                    dispaly_author()
+                    volume_cond = not volume_cond
                 elif event.key == pygame.K_r:
                     if volume_cond:
                         button_sound.play()
-                    setting()
+                    dispaly_author()
+                elif event.key == pygame.K_t:
+                    if volume_cond:
+                        button_sound.play()
+                    setting(volume, volume_2)
             elif event.type == DOUBLE_BULLET_TIME and is_double_bullet and not pause_cond:
                 if double_time:
                     double_time -= 1
@@ -493,7 +554,13 @@ def main():
                             if enemy.rect.bottom > 0:
                                 enemy.hp = 0
                 elif event.button == 1 and authon_image_rect.collidepoint(event.pos):
+                    if volume_cond:
+                        button_sound.play()
                     dispaly_author()
+                elif event.button == 1 and setting_rect.collidepoint(event.pos):
+                    if volume_cond:
+                        button_sound.play()
+                    setting(volume, volume_2)
         # 检测键盘按键事件
         key_pressed = pygame.key.get_pressed()
         if key_pressed[pygame.K_UP] or key_pressed[pygame.K_w]:
@@ -590,9 +657,9 @@ def main():
         if pygame.display.get_active():
             if not pause_cond:
                 if volume_cond:
-                    pygame.mixer.music.play()
+                    pygame.mixer.music.unpause()
                 else:
-                    pygame.mixer.music.stop()
+                    pygame.mixer.music.pause()
                 pygame.mixer.music.unpause()
                 pygame.display.set_caption("正在游戏")
                 # 检测玩家飞机是否与敌方飞机相撞
@@ -631,7 +698,7 @@ def main():
                     if not (delay % 10):
                         bullet_1[index[4]].start_pos(midtop)
                         index[4] = (index[4] + 1) % bullet_1_numbers
-                    elif not (delay % 15) and life_number:
+                    elif not (delay % 10) and life_number:
                         if volume_cond:
                             bullet_sound.play()
                 else:
@@ -642,7 +709,7 @@ def main():
                         bullet_2[index[5] + 1].start_pos(
                             (player_plane.rect.centerx + 30, player_plane.rect.centery - 25))
                         index[5] = (index[5] + 2) % bullet_2_numbers
-                    elif not (delay % 10) and life_number:
+                    elif not (delay % 8) and life_number:
                         if volume_cond:
                             bullet_sound.play()
                 # 检测子弹是否存活
