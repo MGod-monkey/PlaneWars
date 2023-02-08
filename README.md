@@ -9,6 +9,6 @@ pygame经典项目飞机大战
 
 > pip install pygame
 
-## 2,运行main.py文件
+### 2,运行main.py文件
 
 > python main.py
