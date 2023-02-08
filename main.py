@@ -3,11 +3,10 @@ from sys import exit
 from configparser import ConfigParser
 from pygame.locals import *
 from random import choice
-import supply as supply
-from PlaneWars import supply
-from PlaneWars import bullets
-from PlaneWars import enemy
-from PlaneWars import myplane
+from PlaneWars_Class import supply
+from PlaneWars_Class import bullets
+from PlaneWars_Class import enemy
+from PlaneWars_Class import myplane
 
 pygame.init()   # 屏幕初始化
 pygame.mixer.init()  # 声音初始化
